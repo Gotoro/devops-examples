@@ -1,0 +1,27 @@
+# https://github.com/mholt/caddy-l4/issues/276
+
+# Global Options
+{
+    layer4 {                                    # Start using layer4 plugin
+        :853 {                                  # Start listening on port 853
+            @dot tls sni mydns.example.ru       # Define a handler called and calling it dot; it's type is tls; it's options are to match sni of mydns.example.ru
+            route @dot {                        # What handler matched will go into the route with the appropriate name (@dot)
+                tls {                           # Decrypt TLS
+                    connection_policy {         # Inside, we check out the connection policy -
+                        alpn dot                # if it has alpn or dot inside
+                    }
+                }
+                proxy pihole:53                 # in which case, we proxy the request to the docker container named pihole on port 53
+            }
+        }
+    }
+}
+
+mydns.example.ru {                              # Listen on specified domain name (port 443 and 80 is implied by Caddy)
+    respond /health-check 200                   # To all requests coming onto /health-check endpoint return 200
+    respond "Hello world!"                      # Print out "Hello world!" onto empty page
+}
+
+chat.example.ru {
+    reverse_proxy prosody:5222
+}

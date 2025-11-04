@@ -1,0 +1,30 @@
+services:
+  caddy:
+    # This tells Docker Compose to build the image from the Dockerfile in the current directory.
+    build: .
+    container_name: caddy
+    ports:
+      # Ports for standard web traffic and TLS certificate challenges
+      - "80:80/tcp"
+      - "48443:443/tcp"
+      # The crucial port for DNS-over-TLS
+      - "853:853/tcp"
+    volumes:
+      # Mount the Caddyfile into the container
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      # Create persistent volumes for Caddy's data (certs) and config
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    networks:
+      - caddy_net
+
+# We'll put both pihole and caddy and prosody in the same network
+networks:
+  caddy_net:
+    external: True
+
+# Define the named volumes used by Caddy
+volumes:
+  caddy_data:
+  caddy_config:

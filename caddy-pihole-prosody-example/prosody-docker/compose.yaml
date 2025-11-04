@@ -1,0 +1,26 @@
+services:
+  prosody:
+    image: prosody/prosody:latest
+    build: .
+    container_name: prosody
+    restart: unless-stopped
+    expose:
+     - 5222
+#    ports:
+#      - "5222:5222"   # client‑to‑server (C2S)
+#      - "5269:5269"   # server‑to‑server (S2S)
+#      - "5280:5280"   # HTTP admin / BOSH
+    volumes:
+      - ./configs/prosody-provided-example.cfg.lua:/etc/prosody/prosody.cfg.lua:ro
+      - prosody-data:/var/lib/prosody
+    environment:
+      - TZ=Europe/Moscow
+    networks:
+      - caddy_net
+
+volumes:
+  prosody-data:
+
+networks:
+  caddy_net:
+    external: true
