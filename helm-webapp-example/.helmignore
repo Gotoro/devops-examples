@@ -1,0 +1,15 @@
+.DS_Store
+.git/
+.gitignore
+.svn/
+.hg/
+
+*.swp
+*.bak
+*.tmp
+*.orig
+
+*.cr
+
+.ct/
+ct.yaml

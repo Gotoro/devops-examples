@@ -1,0 +1,63 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "my-webapp.fullname" . }}-default-deny
+spec:
+  podSelector: {} # select all
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "my-webapp.fullname" . }}-allow-traffic
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "my-webapp.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # ingress -> frontend
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ .Values.networkPolicy.ingressController.namespace }}
+      podSelector:
+        matchLabels:
+          {{- toYaml .Values.networkPolicy.ingressController.podLabels | nindent 10 }}
+    ports:
+    - protocol: TCP
+      port: 80
+  # frontend -> backend
+  - from:
+    - podSelector:
+        matchLabels:
+          {{- include "my-webapp.selectorLabels" . | nindent 10 }}
+          app.kubernetes.io/component: frontend
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  # backend -> database
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: postgresql
+          app.kubernetes.io/instance: {{ .Release.Name }}
+    ports:
+    - protocol: TCP
+      port: 5432
+  # dns
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+{{- end }}
