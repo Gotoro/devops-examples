@@ -1,0 +1,55 @@
+- name: Install dependencies
+  apt:
+    name:
+      - p7zip-full
+      - wget
+    state: present
+    update_cache: yes
+
+- name: Create /opt/nodpi directory
+  file:
+    path: /opt/nodpi
+    state: directory
+
+- name: Download nodpi zip 
+  get_url:
+    url: "{{ nodpi_url }}" 
+    dest: /opt/nodpi/nodpi.zip
+
+- name: Unzip nodpi 7z archive
+  shell:
+    cmd: 7z x /opt/nodpi/nodpi.zip -o/opt/nodpi -y
+
+- name: Copy binary to /usr/local/bin
+  copy:
+    src: /opt/nodpi/nodpi
+    dest: /usr/local/bin/nodpi
+    mode: '0755'
+    remote_src: yes
+
+- name: Create /etc/nodpi for blacklist.txt
+  file:
+    path: /etc/nodpi
+    state: directory
+
+- name: Copy blacklist.txt to /etc/nodpi
+  copy:
+    src: /opt/nodpi/blacklist.txt
+    dest: /etc/nodpi/blacklist.txt
+    mode: '0755'
+    remote_src: yes
+
+- name: Copy systemd service file
+  copy:
+    src: nodpi.service
+    dest: /etc/systemd/system/nodpi.service
+    force: true
+    mode: '0644'
+
+- name: Enable and start nodpi service
+  systemd_service:
+    name: nodpi
+    enabled: true
+    daemon_reload: true
+    state: restarted
+

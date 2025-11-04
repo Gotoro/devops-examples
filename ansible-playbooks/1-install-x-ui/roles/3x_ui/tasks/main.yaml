@@ -1,0 +1,50 @@
+- name: Create /opt/3x-ui directory
+  file:
+    path: /opt/3x-ui
+    state: directory
+
+- name: Download 3x-ui installer 
+  ansible.builtin.get_url:
+    url: "{{ xui_script_url }}"
+    dest: /opt/3x-ui/install.sh <<< "n"
+    mode: '0755'
+
+- name: Execute 3x-ui installer
+  ansible.builtin.shell: /opt/3x-ui/install.sh
+
+- name: Enable and start x-ui service
+  ansible.builtin.systemd_service:
+    name: nodpi
+    enabled: true
+    daemon_reload: true
+    state: restarted
+
+- name: Create 3x-ui folder
+  file:
+    path: /etc/3x-ui
+    state: directory
+
+- name: Generate RSA private key
+  community.crypto.openssl_privatekey:
+    path: /etc/3x-ui/private.key
+    size: 4096
+    type: RSA
+    mode: '0600'
+
+
+- name: Generate self-signed certificate
+  community.crypto.x509_certificate:
+    path: /etc/3x-ui/public.crt
+    privatekey_path: /etc/3x-ui/private.key
+    provider: selfsigned
+    entrust_not_after: 3650
+    mode: '0644'
+
+- name: Get 3x-ui settings
+  ansible.builtin.command: 3x-ui settings
+  register: 3xui_settings_output
+
+- name: Show 3x-ui settings output
+  ansible.builtin.debug:
+    var: 3xui_settings_output.stdout_lines
+

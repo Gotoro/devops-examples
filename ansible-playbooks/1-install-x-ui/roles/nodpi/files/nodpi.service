@@ -1,0 +1,12 @@
+[Unit]
+Description=NoDPI Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/nodpi --blacklist /etc/nodpi/blacklist.txt --host 127.0.0.1
+User=root
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,11 @@
+- name: Stealth Proxy
+  hosts: vps
+  become: yes
+  vars:
+    nodpi_version: "1.8.2"
+    nodpi_url: "https://github.com/GVCoder09/NoDPI/releases/download/v{{ nodpi_version }}/nodpi_v{{ nodpi_version }}_linux.zip"
+    xui_script_url: "https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh"
+  roles:
+    - { role: ssh_hardening, tags: ['ssh_hardening'] } 
+    - { role: nodpi, tags: ['nodpi'] } 
+    - { role: 3x_ui, tags: ['3x_ui'] } 
